@@ -366,14 +366,10 @@ impl Broker for RedisBroker {
     fn safe_url(&self) -> String {
         let parsed_url = redis::parse_redis_url(&self.uri[..]);
         match parsed_url {
-            Some(url) => format!(
-                "{}://{}:***@{}:{}/{}",
-                url.scheme(),
-                url.username(),
-                url.host_str().unwrap(),
-                url.port().unwrap(),
-                url.path(),
-            ),
+            Some(mut url) => {
+                url.set_password(url.password().map(|_| "***")).unwrap();
+                url.into()
+            }
             None => {
                 error!("Invalid redis url.");
                 String::from("")
